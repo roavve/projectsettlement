@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+
+        <!-- JDBC Database Connection Settings -->
+        <property name="hibernate.connection.driver_class">com.microsoft.sqlserver.jdbc.SQLServerDriver</property>
+        <property name="hibernate.connection.url">jdbc:sqlserver://BILLINGDB00.energo-pro.ge:1433;databaseName=project_pay;selectMethod=cursor;encrypt=true;trustServerCertificate=true</property>
+        <property name="hibernate.connection.username">app_project_pay</property>
+        <property name="hibernate.connection.password">RgWb5#Yw8f;h</property>
+
+        <!-- JDBC connection pool settings -->
+        <property name="hibernate.c3p0.min_size">5</property>
+        <property name="hibernate.c3p0.max_size">20</property>
+        <property name="hibernate.c3p0.timeout">300</property>
+
+        <!-- SQL dialect -->
+        <property name="hibernate.dialect">org.hibernate.dialect.SQLServerDialect</property>
+        <!-- Enable Hibernate to automatically create/drop tables -->
+        <property name="hibernate.hbm2ddl.auto">create-drop</property>
+        <!-- Show SQL statements in console -->
+        <property name="hibernate.show_sql">false</property>
+        <!-- Caching configuration -->
+        <property name="hibernate.cache.region.factory_class">org.hibernate.cache.jcache.JCacheRegionFactory</property>
+        <property name="hibernate.cache.use_second_level_cache">true</property>
+        <property name="hibernate.cache.use_query_cache">false</property>
+        <property name="javax.cache.provider">org.ehcache.jsr107.EhcacheCachingProvider</property>
+        <property name="hibernate.javax.cache.uri">ehcache.xml</property>
+
+        <mapping class="com.example.mssqll.models.ConnectionFee"/>
+        <mapping class="com.example.mssqll.models.User"/>
+        <mapping class="com.example.mssqll.models.ExtractionTask"/>
+    </session-factory>
+</hibernate-configuration>

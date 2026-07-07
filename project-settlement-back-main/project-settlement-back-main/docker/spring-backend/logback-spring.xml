@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="LOG_DESTINATION" value="${LOG_DESTINATION}" />
+
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d %-5level %C{1} [%t] [%X{txIP}] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ELASTIC_JSON" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${LOG_DESTINATION}</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"system":"settlement"}</customFields>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="Console"/>
+        <appender-ref ref="ELASTIC_JSON"/>
+    </root>
+
+    <logger name="com.example.mssqll" level="INFO" additivity="false">
+        <appender-ref ref="Console"/>
+        <appender-ref ref="ELASTIC_JSON"/>
+    </logger>
+
+</configuration>

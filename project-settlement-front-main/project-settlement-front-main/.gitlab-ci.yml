@@ -1,0 +1,77 @@
+stages:
+  - test
+  - secret-detection
+  - build
+  - deploy
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+
+variables:
+  SECRET_DETECTION_ENABLED: 'true'
+  DIST_DIR: "dist"
+  REMOTE_FRONTEND_DIR: "/opt/settlement/frontend"
+
+sast:
+  stage: test
+
+secret_detection:
+  stage: secret-detection
+
+build-frontend:
+  image: node:20
+  stage: build
+  script:
+    - echo "Installing dependencies with npm ci..."
+    - npm ci
+    - echo "Building Vue app for production..."
+    - npm run build
+    - echo "Contents of dist:"
+    - ls -R dist
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 hour
+
+deploy-prod:
+  image: ubuntu:24.04
+  stage: deploy
+  tags:
+    - epg-shared
+  environment: production
+  needs:
+    - job: build-frontend
+      artifacts: true
+  only:
+    - tags
+  before_script:
+    - apt-get update && apt-get install -y openssh-client rsync
+    - eval "$(ssh-agent -s)"
+
+    - mkdir -p /tmp/ssh
+    - echo "$SSH_PRIVATE_KEY_B64" | base64 -d > /tmp/ssh/id_ci
+    - chmod 600 /tmp/ssh/id_ci
+    - ssh-add /tmp/ssh/id_ci
+
+  script:
+    - echo "Deploying Vue frontend to $SSH_USER@$SSH_HOST:$REMOTE_FRONTEND_DIR"
+
+    - |
+      ssh -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" "mkdir -p $REMOTE_FRONTEND_DIR"
+
+    - |
+      rsync -avz --delete \
+        "$DIST_DIR"/ \
+        "$SSH_USER@$SSH_HOST:$REMOTE_FRONTEND_DIR/"
+
+    - echo "Restarting settlement nginx on PROD via docker compose..."
+
+    - |
+      ssh -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" << 'EOF'
+      set -e
+      cd /opt/settlement
+      docker compose build nginx
+      docker compose up -d nginx
+      echo "Deployment finished on $(hostname)."
+      EOF

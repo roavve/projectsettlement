@@ -1,0 +1,8 @@
+/.env
+/docker/cert/
+/docker/frontend/
+/target/
+/.idea/
+*.iml
+/docker/spring-backend/docu-prod-1.2.1.jar
+/src/main/resources/application-dev.properties

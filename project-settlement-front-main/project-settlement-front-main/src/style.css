@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: 'bpg_glaho_sylfaen';
+    src: url('/src/assets/bpg_glaho_sylfaen.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    font-family: 'bpg_glaho_sylfaen', sans-serif;
+}
+
+.filter-row {
+    @apply grid grid-cols-5 items-center;
+}
+
+.select-container {
+    @apply flex items-center gap-x-1;
+}
+
+.filter-select {
+    @apply select select-bordered select-sm w-full max-w-xs focus:outline-0;
+}
+
+.filter-input{
+    @apply input input-bordered input-sm w-full max-w-xs focus:outline-0;
+}
+
+.filter-clear-btn {
+    @apply btn btn-sm btn-circle btn-ghost;
+}
+
+.filter-label {
+    @apply text-sm whitespace-nowrap font-semibold text-gray-600;
+}
+
+/*.filter-item {*/
+/*    */
+/*}*/
+
+/*.filter-item-last {*/
+/*    */
+/*}*/

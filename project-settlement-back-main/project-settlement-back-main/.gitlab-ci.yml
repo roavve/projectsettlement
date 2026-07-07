@@ -1,0 +1,80 @@
+stages:
+  - test
+  - secret-detection
+  - build
+  - deploy
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+
+variables:
+  SECRET_DETECTION_ENABLED: 'true'
+  APP_JAR: "docu-prod-1.2.1.jar"
+
+sast:
+  stage: test
+
+secret_detection:
+  stage: secret-detection
+
+build-job:
+  image: maven:3.9.9-eclipse-temurin-17
+  stage: build
+  script:
+    - echo "Building with system Maven..."
+    - mvn -B clean package -DskipTests
+    - echo "=== Build completed. JARs in target ==="
+    - ls -lh target
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 hour
+
+deploy-prod:
+  image: ubuntu:24.04
+  stage: deploy
+  tags:
+    - epg-shared
+  environment: production
+  needs:
+    - job: build-job
+      artifacts: true
+  only:
+    - tags
+  before_script:
+    - apt-get update && apt-get install -y openssh-client
+    - eval "$(ssh-agent -s)"
+
+    - mkdir -p /tmp/ssh
+    - echo "$SSH_PRIVATE_KEY_B64" | base64 -d > /tmp/ssh/id_ci
+    - chmod 600 /tmp/ssh/id_ci
+    - ssh-add /tmp/ssh/id_ci
+
+  script:
+    - echo "==== Preparing to deploy Maven JAR ===="
+
+    - |
+      LOCAL_JAR="target/$APP_JAR"
+      echo "Using LOCAL_JAR: $LOCAL_JAR"
+
+      if [ ! -f "$LOCAL_JAR" ]; then
+        echo "ERROR: JAR not found: $LOCAL_JAR"
+        ls -lh target
+        exit 1
+      fi
+
+      echo "Uploading JAR to $SSH_USER@$SSH_HOST:/opt/settlement/settlement-backend/$APP_JAR"
+      scp -o StrictHostKeyChecking=no \
+        "$LOCAL_JAR" \
+        "$SSH_USER@$SSH_HOST:/opt/settlement/settlement-backend/$APP_JAR"
+
+    - echo "==== Restarting settlement backend via Docker Compose ===="
+    - |
+      ssh -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" << 'EOF'
+      set -e
+      cd /opt/settlement
+      docker compose build backend
+      docker compose up -d backend
+      echo "Deployment finished successfully on $(hostname)"
+      EOF
