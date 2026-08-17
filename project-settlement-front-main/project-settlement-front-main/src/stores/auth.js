@@ -8,7 +8,6 @@ export const useAuthStore = defineStore("auth", () => {
     const transactionsRoles = ["ROLE_GUEST", "ROLE_OPERATOR", "ROLE_MANAGER", "ROLE_ADMIN"];
     const usersRoles = ["ROLE_ADMIN"];
     const fileExportRoles = ["ROLE_GUEST", "ROLE_OPERATOR", "ROLE_MANAGER", "ROLE_ADMIN"];
-
     const user = ref(null);
     const token = ref(null);
     const isAuthenticated = ref(false);
