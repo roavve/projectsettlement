@@ -7,7 +7,7 @@ import { UserSelect } from '../../components/user-select/user-select';
 import { RecursiveRow } from '../../components/recursive-row/recursive-row';
 import { Pagination } from '../../components/pagination/pagination';
 import { Confirm } from '../../components/modals/confirm/confirm';
-
+import { FilterService } from '../../core/filter.service';
 interface SortOption { text: string; by: string; dir: string; }
 
 @Component({
@@ -62,30 +62,11 @@ export class Transactions implements OnInit {
     paymentOrderSentDate: null, treasuryRefundDate: null, transferPerson: null
   };
 
-  filter: any = {
-    region: 'აირჩიეთ რეგიონი',
-    serviceCenter: 'აირჩიეთ მ/ც',
-    withdrawType: [],
-    status: 'ჩანაწერის სტატუსი',
-    orderStatus: 'ორდერის სტატუსი',
-    totalAmountStart: undefined,
-    totalAmountEnd: undefined,
-    orderN: '',
-    projectID: '',
-    id: '',
-    purpose: '',
-    tax: '',
-    description: '',
-    clarificationDateStart: undefined,
-    clarificationDateEnd: undefined,
-    transferDateStart: undefined,
-    transferDateEnd: undefined,
-    extractionDateStart: undefined,
-    extractionDateEnd: undefined,
-    note: '',
-    history: '',
-    change_person: undefined,
-  };
+  private filterStore = inject(FilterService);
+
+  get filter(): any {
+    return this.filterStore.filter;
+  }
 
   withdrawTypes: string[] = [
     '1 (პირველი გადახდა)',
@@ -243,16 +224,7 @@ export class Transactions implements OnInit {
   }
 
   async handleClear(): Promise<void> {
-    this.filter = {
-      region: 'აირჩიეთ რეგიონი', serviceCenter: 'აირჩიეთ მ/ც', withdrawType: [],
-      status: 'ჩანაწერის სტატუსი', orderStatus: 'ორდერის სტატუსი',
-      totalAmountStart: undefined, totalAmountEnd: undefined,
-      orderN: '', projectID: '', id: '', purpose: '', tax: '', description: '',
-      clarificationDateStart: undefined, clarificationDateEnd: undefined,
-      transferDateStart: undefined, transferDateEnd: undefined,
-      extractionDateStart: undefined, extractionDateEnd: undefined,
-      note: '', history: '', change_person: undefined
-    };
+    this.filterStore.clearFilter();
     this._serviceCenters = [];
     this.clearSortByDir();
     await this.handleFilter();

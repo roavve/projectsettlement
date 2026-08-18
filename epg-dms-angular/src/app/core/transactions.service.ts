@@ -16,10 +16,15 @@ export class TransactionsService {
   private readonly placeholders = [
     'აირჩიეთ რეგიონი',
     'აირჩიეთ მ/ც',
-    'ორდერის სტატუსი',
-    'ჩანაწერის სტატუსი'
+    'აირჩიეთ სტატუსი',
+    'ჩანაწერის სტატუსი',
+    'ორდერის სტატუსი'
   ];
-
+  downloadExport(params: HttpParams): Promise<any> {
+    return firstValueFrom(this.http.get(`${BASE_URL}connection-fees/download`, {
+      params, responseType: 'blob', observe: 'response'
+    }));
+  }
   buildParams(filter: any, extra: Record<string, any> = {}): HttpParams {
     const obj: Record<string, string> = {};
 

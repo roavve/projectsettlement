@@ -1,6 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth.service';
+import { FilterService } from '../../../core/filter.service';
+import { TransactionsService } from '../../../core/transactions.service';
 
 @Component({
   selector: 'app-navigation',
@@ -11,6 +13,9 @@ import { AuthService } from '../../../core/auth.service';
 export class Navigation {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private filterStore = inject(FilterService);
+  private api = inject(TransactionsService);
+  private cdr = inject(ChangeDetectorRef);
 
   exportLoading = false;
 
@@ -36,6 +41,40 @@ export class Navigation {
     const u = this.auth.user();
     return u?.firstName ? `${u.firstName[0]}. ${u.lastName}` : '';
   };
+
+  async downloadExport(): Promise<void> {
+    if (this.exportLoading) return;
+    this.exportLoading = true;
+    this.cdr.markForCheck();
+
+    try {
+      const params = this.api.buildParams(this.filterStore.filter);
+      const response: any = await this.api.downloadExport(params);
+
+      let fileName: string | null = null;
+      const cd = response.headers.get('content-disposition');
+      if (cd) {
+        const idx = cd.toLowerCase().indexOf('filename=');
+        if (idx !== -1) {
+          fileName = cd.substring(idx + 9).trim().replace(/^"(.*)"$/, '$1');
+        }
+      }
+
+      const url = window.URL.createObjectURL(response.body);
+      const link = document.createElement('a');
+      link.href = url;
+      if (fileName) link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export download failed:', err);
+    } finally {
+      this.exportLoading = false;
+      this.cdr.markForCheck();
+    }
+  }
 
   async logout(): Promise<void> {
     try {

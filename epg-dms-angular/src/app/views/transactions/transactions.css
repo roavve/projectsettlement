@@ -1,0 +1,8 @@
+.filter-panel {
+  animation: filter-fade 0.3s ease;
+}
+
+@keyframes filter-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
