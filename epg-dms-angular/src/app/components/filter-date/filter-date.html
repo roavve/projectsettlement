@@ -1,0 +1,15 @@
+<div class="flex flex-col gap-y-2.5">
+  <div class="flex items-center gap-x-1.5 h-7">
+    <p class="filter-label pb-1">{{ label() }}</p>
+
+    @if (showClear) {
+      <button class="btn btn-sm btn-circle btn-ghost" (click)="handleClick()">✕</button>
+    }
+  </div>
+
+  <div class="flex gap-x-2.5">
+    <input type="date" class="text-sm" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)"/>
+
+    <input type="date" class="text-sm" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)"/>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+<div class="relative select-container">
+  <select
+    [value]="modelValue() === undefined ? '' : modelValue()"
+    (change)="handleSelect($event)"
+    class="filter-select w-full"
+  >
+    <option value="">{{ placeholder() }}</option>
+    @for (user of users; track user.id) {
+      <option [value]="user.id">{{ user.firstName }} {{ user.lastName }}</option>
+    }
+  </select>
+  <button class="filter-clear-btn" (click)="clearSelection()">✕</button>
+</div>
