@@ -12,8 +12,7 @@
     <div class="filter-row">
       <!--რეგიონი-->
       <div class="select-container">
-        <select class="filter-select" [(ngModel)]="filter.region">
-          <option disabled selected>აირჩიეთ რეგიონი</option>
+        <select class="filter-select" [(ngModel)]="filter.region" (change)="getSelectedParentId($event)">          <option disabled selected>აირჩიეთ რეგიონი</option>
           @for (region of _regions; track region.id) {
             <option [value]="region.name" [attr.data-id]="region.id">{{ region.name }}</option>
           }
@@ -133,8 +132,7 @@
              placeholder="შენიშვნა"/>
 
       <div class="select-container">
-        <select class="select select-bordered select-sm w-full focus:outline-0" [(ngModel)]="sortByDir">
-          <option disabled>დალაგება</option>
+        <select class="select select-bordered select-sm w-full focus:outline-0" [(ngModel)]="sortByDir" (ngModelChange)="onSortChange()">          <option disabled>დალაგება</option>
           @for (option of sortOptions; track $index) {
             <option [ngValue]="option">{{ option.text }}</option>
           }
@@ -145,8 +143,8 @@
       <input type="text" class="filter-input" [(ngModel)]="filter.history" placeholder="History Id"/>
 
       <div class="flex gap-x-2">
-        <button class="btn btn-neutral btn-sm">გაფილტვრა</button>
-        <button class="btn btn-neutral btn-sm">გასუფთავება</button>
+        <button class="btn btn-neutral btn-sm" (click)="handleFilter()">გაფილტვრა</button>
+        <button class="btn btn-neutral btn-sm" (click)="handleClear()">გასუფთავება</button>
       </div>
     </div>
     <!--მესამე ხაზი-->
@@ -404,6 +402,7 @@
       </div>
     </div>
   </dialog>
-  <app-pagination [(currentPage)]="currentPage" [(pageSize)]="pageSize" [(totalPages)]="totalPages"
-                  [(totalElements)]="totalElements"/>
+  <app-pagination [currentPage]="currentPage" (currentPageChange)="onPageChange($event)"
+                  [pageSize]="pageSize" (pageSizeChange)="onPageSizeChange($event)"
+                  [totalPages]="totalPages" [totalElements]="totalElements"/>
 </div>

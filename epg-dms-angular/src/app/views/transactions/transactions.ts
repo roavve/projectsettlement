@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../core/auth.service';
+import { TransactionsService } from '../../core/transactions.service';
 import { FilterDate } from '../../components/filter-date/filter-date';
 import { UserSelect } from '../../components/user-select/user-select';
 import { RecursiveRow } from '../../components/recursive-row/recursive-row';
@@ -14,15 +16,131 @@ interface SortOption { text: string; by: string; dir: string; }
   templateUrl: './transactions.html',
   styleUrl: './transactions.css'
 })
-export class Transactions {
-  isVisible = false;
+export class Transactions implements OnInit {
+  private api = inject(TransactionsService);
+  private auth = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
+
+  regions: any[] = [];
+  sortBy: string | undefined;
+  sortDir: string | undefined;
+  async ngOnInit(): Promise<void> {
+    this.user = this.auth.user();
+    await this.loadRegions();
+    await this.getFees();
+    await this.loadServiceCenters();
+  }
+
+  async loadRegions(parentId = 68): Promise<void> {
+    try {
+      const res: any = await this.api.getRegionsByParentId(parentId);
+      if (parentId === 68) {
+        this.regions = res.data;
+        this._regions = res.data;
+      } else {
+        this._serviceCenters = res.data;
+      }
+      this.cdr.markForCheck();
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }
+
+  async loadServiceCenters(): Promise<void> {
+    try {
+      this.sc = await this.api.getServiceCenters();
+      this.cdr.markForCheck();
+    } catch (error) {
+      console.error('Error service centers data:', error);
+    }
+  }
+
+  async getFees(): Promise<void> {
+    this.records = undefined;
+    this.cdr.markForCheck();
+    const params = this.api.buildParams(this.filter, {
+      sortBy: this.sortBy,
+      sortDir: this.sortDir,
+      page: this.currentPage,
+      size: this.pageSize
+    });
+    try {
+      const data: any = await this.api.getFees(params);
+      this.records = data.content;
+      this.addShowProperty();
+      this.totalPages = data.page.totalPages;
+      this.totalElements = data.page.totalElements;
+    } catch (error) {
+      console.error('Error fetching sheets:', error);
+    }
+    this.cdr.markForCheck();
+  }
+
+  private addShowProperty(): void {
+    const stack = [...(this.records ?? [])];
+    while (stack.length > 0) {
+      const record = stack.pop();
+      record.show = false;
+      const remainderChild = record.children.filter((c: any) => c.status === 'REMINDER');
+      if (record.children && record.children.length > 0) {
+        record.remainder = remainderChild.length > 0 ? remainderChild[0].totalAmount : 0;
+        stack.push(...record.children);
+      } else {
+        record.remainder = record.totalAmount;
+      }
+    }
+  }
+
+  async getSelectedParentId(event: Event): Promise<void> {
+    const opt = (event.target as HTMLSelectElement).selectedOptions[0];
+    await this.loadRegions(Number(opt.getAttribute('data-id')));
+  }
+
+  async handleFilter(): Promise<void> {
+    this.currentPage = 1;
+    await this.getFees();
+  }
+
+  async handleClear(): Promise<void> {
+    this.filter = {
+      region: 'აირჩიეთ რეგიონი', serviceCenter: 'აირჩიეთ მ/ც', withdrawType: [],
+      status: 'ჩანაწერის სტატუსი', orderStatus: 'ორდერის სტატუსი',
+      totalAmountStart: undefined, totalAmountEnd: undefined,
+      orderN: '', projectID: '', id: '', purpose: '', tax: '', description: '',
+      clarificationDateStart: undefined, clarificationDateEnd: undefined,
+      transferDateStart: undefined, transferDateEnd: undefined,
+      extractionDateStart: undefined, extractionDateEnd: undefined,
+      note: '', history: '', change_person: undefined
+    };
+    this._serviceCenters = [];
+    this.clearSortByDir();
+    await this.handleFilter();
+  }
+
+  async onSortChange(): Promise<void> {
+    this.sortBy = this.sortByDir.by;
+    this.sortDir = this.sortByDir.dir;
+    this.currentPage = 1;
+    await this.getFees();
+  }
+
+  async onPageChange(page: number): Promise<void> {
+    this.currentPage = page;
+    await this.getFees();
+  }
+
+  async onPageSizeChange(size: number): Promise<void> {
+    this.pageSize = size;
+    this.currentPage = 1;
+    await this.getFees();
+  }  isVisible = false;
   isTypeDropdownOpen = false;
 
   _regions: any[] = [];
   _serviceCenters: any[] = [];
   records: any[] | undefined = [];
 
-  user: any = { role: 'ROLE_ADMIN' };
+  user: any = null;
   currentPage = 1;
   pageSize = 20;
   totalPages = 1;
