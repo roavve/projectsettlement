@@ -67,4 +67,15 @@ export class TransactionsService {
   getServiceCenters(): Promise<any> {
     return firstValueFrom(this.http.get(`${BASE_URL}business-units/unit-key/62`));
   }
+  updateRecord(id: any, body: any): Promise<any> {
+    return firstValueFrom(this.http.put(`${BASE_URL}connection-fees/${id}`, body));
+  }
+
+  deleteRecord(id: any): Promise<any> {
+    return firstValueFrom(this.http.delete(`${BASE_URL}connection-fees/soft-delete/${id}`));
+  }
+
+  divide(id: any, amounts: number[]): Promise<any> {
+    return firstValueFrom(this.http.post(`${BASE_URL}connection-fees/divide-fee/${id}`, amounts));
+  }
 }

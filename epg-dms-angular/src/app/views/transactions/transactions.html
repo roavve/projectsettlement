@@ -177,7 +177,9 @@
     </thead>
 
     @if (records && records.length > 0) {
-      <tbody app-recursive-row [records]="records" [user]="user"></tbody>
+      <tbody app-recursive-row [records]="records" [user]="user"
+             (handleEditClick)="handleEditClick($event)"
+             (handleDivideClick)="handleDivideClick($event)"></tbody>
     } @else if (records && records.length === 0) {
       <tbody>
       <tr>
@@ -326,21 +328,19 @@
         <div class="flex items-center justify-between mt-4">
           <div class="flex justify-between items-center">
             <div class="modal-action">
-              <button class="btn btn-neutral">შენახვა</button>
-
-              <button class="btn btn-warning">გასუფთავება</button>
-
-              <button class="btn btn-error text-white">წაშლა</button>
+              <button class="btn btn-neutral" (click)="handleSaveClick()">შენახვა</button>
+              <button class="btn btn-warning" (click)="handleClearClick()">გასუფთავება</button>
+              <button class="btn btn-error text-white" (click)="openDeleteModal()">წაშლა</button>
             </div>
           </div>
 
-          <button class="btn">გაუქმება</button>
+          <button class="btn" (click)="cancelModal()">გაუქმება</button>
         </div>
       }
     </div>
   </dialog>
 
-  <app-confirm [modalId]="'delete_transaction_modal'"/>
+  <app-confirm [modalId]="'delete_transaction_modal'" (accept)="hdc()"/>
   <dialog id="my_modal_7" class="modal">
     <div class="modal-box">
       <form method="dialog">
@@ -351,7 +351,7 @@
         <input class="input input-bordered w-full max-w-xs input-sm focus:outline-0" type="text" [(ngModel)]="amount"
                placeholder="10 25 50"/>
         <form method="dialog" class="flex items-center justify-end w-full gap-x-5">
-          <button class="btn btn-neutral btn-sm" [disabled]="!validateAmount()">გაყოფა</button>
+          <button class="btn btn-neutral btn-sm" [disabled]="!validateAmount()" (click)="handleDivision()">გაყოფა</button>
           <button class="btn btn-sm">გაუქმება</button>
         </form>
       </div>
