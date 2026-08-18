@@ -1,0 +1,32 @@
+<nav class="flex gap-x-5 items-center justify-between">
+  <div class="flex items-center gap-x-5">
+    <!-- Files Link -->
+    @if (showFiles()) {
+      <a class="btn" routerLink="/files">ფაილები</a>
+    }
+    <!-- Transactions Link -->
+    @if (showTransactions()) {
+      <a class="btn" routerLink="/">ჩარიცხვები</a>
+    }
+  </div>
+  @if (isAuthenticated) {
+    <div class="flex items-center gap-x-5">
+      <!-- File Export Link -->
+      @if (showFileExport()) {
+        <button class="text-white btn btn-success" type="button" [disabled]="exportLoading">
+          @if (!exportLoading) { <span>ექსპორტი</span> }
+          @else { <span>ფაილი იგზავნება...</span> }
+        </button>
+      }
+      <!-- Users Link -->
+      @if (showUsers()) {
+        <a class="btn" routerLink="/users">მომხმარებლები</a>
+      }
+      <!-- User Profile and Logout -->
+      <div class="cursor-pointer items-center avatar placeholder gap-x-2.5">
+        <button class="cursor-auto uppercase btn no-animation hover:bg-base-200 hover:border-base-200">{{ getUserName() }}</button>
+        <button class="text-white btn btn-error">გასვლა</button>
+      </div>
+    </div>
+  }
+</nav>
