@@ -4,12 +4,13 @@ import { FilterDate } from '../../components/filter-date/filter-date';
 import { UserSelect } from '../../components/user-select/user-select';
 import { RecursiveRow } from '../../components/recursive-row/recursive-row';
 import { Pagination } from '../../components/pagination/pagination';
+import { Confirm } from '../../components/modals/confirm/confirm';
 
 interface SortOption { text: string; by: string; dir: string; }
 
 @Component({
   selector: 'app-transactions',
-  imports: [FormsModule, FilterDate, UserSelect, RecursiveRow, Pagination],
+  imports: [FormsModule, FilterDate, UserSelect, RecursiveRow, Pagination, Confirm],
   templateUrl: './transactions.html',
   styleUrl: './transactions.css'
 })
@@ -26,6 +27,29 @@ export class Transactions {
   pageSize = 20;
   totalPages = 1;
   totalElements = 20;
+
+  _error = false;
+  searchTerm = '';
+  isDropdownOpen = false;
+  canceledProject = '';
+  sc: any[] = [];
+
+  amount = '';
+  remainder: number | undefined;
+
+  similarPayments: any[] = [];
+  similarPage = 1;
+  similarPageSize = 10;
+  similarTotalPages = 0;
+  similarTotalElements = 0;
+  similarLoading = false;
+
+  extractionFee: any = {
+    orderN: '', orderStatus: null, region: '', serviceCenter: '', projectID: '',
+    withdrawType: '', note: '', tax: '', totalAmount: '', purpose: '', description: '',
+    clarificationDate: null, transferDate: null, extractionDate: null,
+    paymentOrderSentDate: null, treasuryRefundDate: null, transferPerson: null
+  };
 
   filter: any = {
     region: 'აირჩიეთ რეგიონი',
@@ -96,6 +120,43 @@ export class Transactions {
   ];
 
   sortByDir: SortOption = this.sortOptions[16];
+
+  get filteredServiceCenters(): any[] {
+    return this.sc.filter(c => c.name.toLowerCase().includes(this.searchTerm));
+  }
+
+  closeDropdown(): void {
+    setTimeout(() => this.isDropdownOpen = false, 200);
+  }
+
+  selectCenter(centerName: string, parentName: string): void {
+    this.extractionFee.serviceCenter = centerName;
+    this.searchTerm = centerName;
+    this.extractionFee.region = parentName;
+    this.isDropdownOpen = false;
+  }
+
+  formatDate(dateString: string, includeTime = false): string {
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    if (includeTime) {
+      const h = date.getHours().toString().padStart(2, '0');
+      const m = date.getMinutes().toString().padStart(2, '0');
+      const s = date.getSeconds().toString().padStart(2, '0');
+      return `${day}.${month}.${year} ${h}:${m}:${s}`;
+    }
+    return `${day}.${month}.${year}`;
+  }
+
+  validateAmount(): boolean {
+    const regex = /^(\d+(\.\d+)?(\s\d+(\.\d+)?)*)$/;
+    const clean = this.amount.replace(/\s+/g, ' ').trim();
+    const numbers = clean.split(' ').map(Number);
+    const sum = numbers.reduce((a, b) => a + b, 0);
+    return regex.test(clean) && numbers.every(n => n > 0) && sum <= (this.remainder ?? 0);
+  }
 
   extractStartingNumber(type: string): string {
     if (type === 'null') return type;

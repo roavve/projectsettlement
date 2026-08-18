@@ -199,7 +199,212 @@
     }
   </table>
   <!--ცხრილი-->
+  <dialog id="my_modal_1" class="modal">
+    <div class="modal-box max-w-[45vw] flex flex-col gap-y-3 text-sm">
+      @if (extractionFee) {
+        <div class="flex gap-x-20">
+          <!-- Left Column -->
+          <div class="flex flex-col w-1/2 gap-y-2">
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">ორდერის N</label>
+              <div class="grid grid-cols-2 gap-x-2 max-w-xs">
+                <input type="text" class="input input-bordered w-full max-w-xs input-sm focus:outline-0"
+                       [(ngModel)]="extractionFee.orderN"/>
+                <select class="filter-select" [(ngModel)]="extractionFee.orderStatus">
+                  <option value="ORDER_INCOMPLETE">გამოუყენებელი</option>
+                  <option value="ORDER_COMPLETE">შევსებული</option>
+                  <option value="YELLOW_AMOUNT">დასასრულებელი</option>
+                  <option value="CANCELED">გაუქმებული</option>
+                  <option value="IN_PROGRESS">პროცესში</option>
+                  <option value="RETURNED">დაბრუნებული</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">რეგიონი</label>
+              <input [value]="extractionFee.region" class="input input-bordered max-w-xs input-sm mb-2 focus:outline-0"
+                     disabled>
+            </div>
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">მ/ც</label>
+              <div class="relative max-w-xs">
+                <input type="text" [(ngModel)]="searchTerm" placeholder="აირჩიეთ მ/ც" (focus)="isDropdownOpen = true"
+                       (blur)="closeDropdown()" class="input input-bordered input-sm mb-2 focus:outline-0 w-full"/>
 
+                <!-- Dropdown options -->
+                @if (isDropdownOpen && filteredServiceCenters.length) {
+                  <div class="absolute z-10 bg-white border border-gray-300 rounded-md shadow-lg mt-1">
+                    @for (center of filteredServiceCenters; track $index) {
+                      <div (mousedown)="selectCenter(center.name, center.parent.name)"
+                           class="p-2 hover:bg-gray-100 cursor-pointer">
+                        {{ center.name }}
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">პროექტის N</label>
+              <input type="text" class="input input-bordered w-full max-w-xs input-sm focus:outline-0"
+                     [(ngModel)]="extractionFee.projectID"/>
+            </div>
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">ტიპი</label>
+              <select class="select select-bordered select-sm w-full max-w-xs focus:outline-0"
+                      [(ngModel)]="extractionFee.withdrawType">
+                <option disabled selected>აირჩიეთ ტიპი</option>
+                @for (type of withdrawTypes.slice(0, 16); track $index) {
+                  <option [value]="extractStartingNumber(type)">{{ type }}</option>
+                }
+              </select>
+            </div>
+            @if (extractionFee.withdrawType === '6') {
+              <div class="flex items-center gap-x-2.5">
+                <input type="date" class="text-sm" [(ngModel)]="extractionFee.paymentOrderSentDate"/>
+
+                <input type="date" class="text-sm" [(ngModel)]="extractionFee.treasuryRefundDate"/>
+              </div>
+            }
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">შენიშვნა</label>
+              <textarea class="textarea textarea-bordered textarea-xs w-full max-w-xs focus:outline-0 resize-none"
+                        [(ngModel)]="extractionFee.note"></textarea>
+            </div>
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">გაუქმებული პროექტები</label>
+              <textarea placeholder="პროექტები გამოყავით სფეისით"
+                        class="textarea textarea-bordered textarea-xs w-full max-w-xs focus:outline-0 resize-none"
+                        [(ngModel)]="canceledProject"></textarea>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="flex flex-col justify-between w-1/2 gap-y-2">
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">გარკვევის თარიღი</label>
+              <div>{{ extractionFee.clarificationDate ? formatDate(extractionFee.clarificationDate) : '' }}</div>
+            </div>
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">გადმოტანის თარიღი</label>
+              <div>
+                <p>{{ extractionFee.transferDate ? formatDate(extractionFee.transferDate, true) : '' }}</p>
+                @if (extractionFee.transferPerson) {
+                  <p class="text-neutral underline font-bold">{{ extractionFee.transferPerson.firstName }} {{ extractionFee.transferPerson.lastName }}</p>
+                }
+              </div>
+            </div>
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">ჩარიცხვის თარიღი</label>
+              <div>{{ extractionFee.extractionDate ? formatDate(extractionFee.extractionDate) : '' }}</div>
+            </div>
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">ბრუნვა</label>
+              <div>{{ extractionFee.totalAmount }}</div>
+            </div>
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">დანიშნულება</label>
+              <div>{{ extractionFee.purpose }}</div>
+            </div>
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">დამატებიტი ინფორმაცია</label>
+              <div>{{ extractionFee.description }}</div>
+            </div>
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">თანხის დაბრუნებაზე ხაზინაში მოთხოვნის გაგზავნის თარიღი</label>
+              <div>{{ extractionFee.paymentOrderSentDate ? formatDate(extractionFee.paymentOrderSentDate) : '' }}</div>
+            </div>
+            <div class="flex flex-col gap-y-2">
+              <label class="font-semibold text-gray-600">საგადახდო დავალების გაგზავნის თარიღი</label>
+              <div>{{ extractionFee.treasuryRefundDate ? formatDate(extractionFee.treasuryRefundDate) : '' }}</div>
+            </div>
+          </div>
+        </div>
+
+        @if (_error) {
+          <span class="text-error">გთხოვთ შეავსოთ ყველა სავადლებულო ველი!</span>
+        }
+
+        <div class="flex items-center justify-between mt-4">
+          <div class="flex justify-between items-center">
+            <div class="modal-action">
+              <button class="btn btn-neutral">შენახვა</button>
+
+              <button class="btn btn-warning">გასუფთავება</button>
+
+              <button class="btn btn-error text-white">წაშლა</button>
+            </div>
+          </div>
+
+          <button class="btn">გაუქმება</button>
+        </div>
+      }
+    </div>
+  </dialog>
+
+  <app-confirm id="delete_transaction_modal"/>
+
+  <dialog id="my_modal_7" class="modal">
+    <div class="modal-box">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 focus:outline-none">✕</button>
+      </form>
+      <h3 class="text-lg font-bold">გთხოვთ შეიყვანოთ თანხა! ნაშთი {{ remainder }}</h3>
+      <div class="modal-action items-center">
+        <input class="input input-bordered w-full max-w-xs input-sm focus:outline-0" type="text" [(ngModel)]="amount"
+               placeholder="10 25 50"/>
+        <form method="dialog" class="flex items-center justify-end w-full gap-x-5">
+          <button class="btn btn-neutral btn-sm" [disabled]="!validateAmount()">გაყოფა</button>
+          <button class="btn btn-sm">გაუქმება</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="similar_payments_modal" class="modal">
+    <div class="modal-box w-[80vw] h-[80vh] max-w-none flex flex-col">
+      @if (similarLoading) {
+        <div class="flex justify-center my-4 flex-grow">
+          <span class="loading loading-spinner loading-lg"></span>
+        </div>
+      } @else {
+        <div class="overflow-y-auto flex-grow">
+          <table class="table table-xs table-pin-rows">
+            <thead>
+            <tr>
+              <th>ID</th>
+              <th>რეგიონი</th>
+              <th>მ/ც</th>
+              <th>Tax ID</th>
+              <th>თანხა</th>
+            </tr>
+            </thead>
+            <tbody>
+              @for (payment of similarPayments; track payment.id) {
+                <tr>
+                  <td>{{ payment.id }}</td>
+                  <td>{{ payment.region }}</td>
+                  <td>{{ payment.serviceCenter }}</td>
+                  <td>{{ payment.tax }}</td>
+                  <td>{{ payment.totalAmount }}</td>
+                </tr>
+              }
+              @if (similarPayments.length === 0) {
+                <tr>
+                  <td colspan="5" class="text-center">ჩანაწერები არ მოიძებნა</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <div class="mt-4">
+        <app-pagination [absolute]="true" [(currentPage)]="similarPage" [(pageSize)]="similarPageSize"
+                        [(totalPages)]="similarTotalPages" [(totalElements)]="similarTotalElements"/>
+      </div>
+    </div>
+  </dialog>
   <app-pagination [(currentPage)]="currentPage" [(pageSize)]="pageSize" [(totalPages)]="totalPages"
                   [(totalElements)]="totalElements"/>
 </div>
