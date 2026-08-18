@@ -34,7 +34,7 @@
             <button (click)="editUser(user)" class="btn btn-sm btn-info text-white">
               შეცვლა
             </button>
-            <button class="btn btn-error text-white btn-sm ml-2.5">წაშლა
+            <button (click)="openDeleteModal(user)" class="btn btn-error text-white btn-sm ml-2.5">წაშლა
             </button>
           </td>
         </tr>
@@ -42,8 +42,7 @@
     </tbody>
   </table>
 
-  <app-confirm [modalId]="'cnfrm_0'"/>
-
+  <app-confirm [modalId]="'cnfrm_0'" (accept)="deleteUser()"/>
   <!-- Edit/Create Modal -->
   @if (showModal) {
     <div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
@@ -81,7 +80,7 @@
           </select>
         </div>
         <div class="flex justify-end gap-x-5">
-          <button class="btn btn-success text-white" [disabled]="hasErrors">
+          <button (click)="saveUser()" class="btn btn-success text-white" [disabled]="hasErrors">
             {{ isEditing ? 'შენახვა' : 'შექმნა' }}
           </button>
           <button (click)="showModal = false"

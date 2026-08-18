@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Confirm } from '../../components/modals/confirm/confirm';
+import { UsersService } from '../../core/users.service';
 
 interface Role { key: string; text: string; }
 
@@ -10,11 +11,15 @@ interface Role { key: string; text: string; }
   templateUrl: './users.html',
   styleUrl: './users.css'
 })
-export class Users {
+export class Users implements OnInit {
+  private api = inject(UsersService);
+  private cdr = inject(ChangeDetectorRef);
+
   users: any[] = [];
   showModal = false;
   isEditing = false;
   showPassword = false;
+  deleteId: any;
 
   selectedUser: any = {
     firstName: '',
@@ -30,6 +35,19 @@ export class Users {
     { key: 'ROLE_MANAGER', text: 'მენეჯერი' },
     { key: 'ROLE_GUEST', text: 'სტუმარი' }
   ];
+
+  async ngOnInit(): Promise<void> {
+    await this.getUsers();
+  }
+
+  async getUsers(): Promise<void> {
+    try {
+      this.users = await this.api.getUsers();
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+    this.cdr.markForCheck();
+  }
 
   get passwordFieldType(): string {
     return this.showPassword ? 'text' : 'password';
@@ -64,6 +82,35 @@ export class Users {
     this.selectedUser = { ...user };
     this.isEditing = true;
     this.showModal = true;
+  }
+
+  async saveUser(): Promise<void> {
+    if (this.hasErrors) return;
+    try {
+      if (this.isEditing) {
+        await this.api.updateUser(this.selectedUser.id, this.selectedUser);
+      } else {
+        await this.api.createUser(this.selectedUser);
+      }
+      this.showModal = false;
+      await this.getUsers();
+    } catch (error) {
+      console.error('Error saving user:', error);
+    }
+  }
+
+  openDeleteModal(user: any): void {
+    this.deleteId = user.id;
+    (document.getElementById('cnfrm_0') as HTMLDialogElement).showModal();
+  }
+
+  async deleteUser(): Promise<void> {
+    try {
+      await this.api.deleteUser(this.deleteId);
+      await this.getUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
   }
 
   formatDate(dateString: string): string {
