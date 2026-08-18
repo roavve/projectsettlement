@@ -1,3 +1,7 @@
+:host {
+  display: contents;
+}
+
 .no-spinner::-webkit-outer-spin-button,
 .no-spinner::-webkit-inner-spin-button {
   appearance: none;

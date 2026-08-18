@@ -1,9 +1,8 @@
 @if (user) {
-  <app-file-input/>
-}
+  <app-file-input [(modelValue)]="selectedFile" (createFile)="createFile()"/>}
 
-<app-confirm [modalId]="'delete_file_modal'" question="ნამდვილად გსურთ ფაილის წაშლა?"/>
-<app-confirm [modalId]="'transfer_file_modal'" question="ნამდვილად გსურთ ყველა ჩანაწერის გადატანა?"/>
+<app-confirm [modalId]="'delete_file_modal'" question="ნამდვილად გსურთ ფაილის წაშლა?" (accept)="deleteFile()"/>
+<app-confirm [modalId]="'transfer_file_modal'" question="ნამდვილად გსურთ ყველა ჩანაწერის გადატანა?" (accept)="transferFile()"/>
 <div class="flex flex-col gap-y-5">
   <table class="table table-xs">
     <thead>
@@ -37,19 +36,18 @@
               }
             </td>
             <td>
-              <img src="/assets/visibility.svg" alt="view icon" class="cursor-pointer"/>
+              <img src="/assets/visibility.svg" alt="view icon" class="cursor-pointer" (click)="openDetails(sheet)"/>
             </td>
             @if (user) {
               <td>
                 @if (sheet.status !== 'HISTORY') {
-                  <img src="/assets/delete.svg" alt="delete icon" class="cursor-pointer"/>
-                }
+                  <img src="/assets/delete.svg" alt="delete icon" class="cursor-pointer" (click)="openDeleteModal(sheet)"/>                }
               </td>
             }
             @if (user) {
               <td>
                 @if (sheet.status === 'GOOD' || sheet.status === 'WARNING') {
-                  <button>
+                  <button (click)="openTransferModal(sheet)">
                     <img src="/assets/save.svg" alt="save icon"/>
                   </button>
                 }
@@ -58,7 +56,7 @@
             @if (user) {
               <td>
                 @if (sheet.status !== 'HISTORY') {
-                  <button class="cursor-pointer">
+                  <button class="cursor-pointer" (click)="download(baseName(sheet.fileName))">
                     <img src="/assets/download.png" width="32" height="32" alt="download icon"/>
                   </button>
                 }
@@ -86,8 +84,9 @@
     }
   </table>
 
-  <app-pagination [(currentPage)]="currentPage" [(pageSize)]="pageSize" [(totalPages)]="totalPages"
-                  [(totalElements)]="totalElements"/>
+  <app-pagination [currentPage]="currentPage" (currentPageChange)="onPageChange($event)"
+                  [pageSize]="pageSize" (pageSizeChange)="onPageSizeChange($event)"
+                  [totalPages]="totalPages" [totalElements]="totalElements"/>
 </div>
 
 <dialog id="my_modal_1" class="modal">
@@ -203,24 +202,25 @@
           </div>
 
           <div class="flex flex-col gap-x-2 gap-y-2">
-            <button class="btn btn-neutral btn-sm">გაფილტვრა</button>
-            <button class="btn btn-neutral btn-sm">გასუფთავება</button>
+            <button class="btn btn-neutral btn-sm" (click)="handleFilter()">გაფილტვრა</button>
+            <button class="btn btn-neutral btn-sm" (click)="handleClear()">გასუფთავება</button>
           </div>
         </div>
       </div>
     </div>
     <div class="modal-action">
-      <form method="dialog">
+      <form method="dialog" (submit)="closeDetails()">
         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
           ✕
         </button>
       </form>
-      <form method="dialog">
+      <form method="dialog" (submit)="closeDetails()">
         <button class="btn">დახურვა</button>
       </form>
     </div>
   </div>
 
-  <app-pagination [(currentPage)]="_currentPage" [(pageSize)]="_pageSize" [(totalPages)]="_totalPages"
-                  [(totalElements)]="_totalElements"/>
+  <app-pagination [currentPage]="_currentPage" (currentPageChange)="onDetailsPageChange($event)"
+                  [pageSize]="_pageSize" (pageSizeChange)="onDetailsPageSizeChange($event)"
+                  [totalPages]="_totalPages" [totalElements]="_totalElements"/>
 </dialog>
