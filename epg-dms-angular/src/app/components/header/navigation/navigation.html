@@ -2,11 +2,11 @@
   <div class="flex items-center gap-x-5">
     <!-- Files Link -->
     @if (showFiles()) {
-      <a class="btn" routerLink="/files">ფაილები</a>
+      <a class="btn" [class.btn-neutral]="checkCurrentRoute('/files')" routerLink="/files">ფაილები</a>
     }
     <!-- Transactions Link -->
     @if (showTransactions()) {
-      <a class="btn" routerLink="/">ჩარიცხვები</a>
+      <a class="btn" [class.btn-neutral]="checkCurrentRoute('/')" routerLink="/">ჩარიცხვები</a>
     }
   </div>
   @if (isAuthenticated) {
@@ -20,12 +20,12 @@
       }
       <!-- Users Link -->
       @if (showUsers()) {
-        <a class="btn" routerLink="/users">მომხმარებლები</a>
+        <a class="btn" [class.btn-neutral]="checkCurrentRoute('/users')" routerLink="/users">მომხმარებლები</a>
       }
       <!-- User Profile and Logout -->
       <div class="cursor-pointer items-center avatar placeholder gap-x-2.5">
         <button class="cursor-auto uppercase btn no-animation hover:bg-base-200 hover:border-base-200">{{ getUserName() }}</button>
-        <button class="text-white btn btn-error">გასვლა</button>
+        <button class="text-white btn btn-error" (click)="logout()">გასვლა</button>
       </div>
     </div>
   }
