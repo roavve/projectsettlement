@@ -1,0 +1,58 @@
+<ng-template #rowTpl let-rows let-level="level">
+  @for (extraction of rows; track extraction.id) {
+    <tr class="cursor-pointer"
+        [class.bg-yellow-100]="extraction.status === 'REMINDER'"
+        [class.bg-gray-300]="extraction.children.length > 0"
+        [class.hover:bg-gray-100]="extraction.children.length <= 0"
+        [class.hover:bg-yellow-100]="extraction.status === 'REMINDER'">
+      @if (user()) {
+        <td title="გაყოფა">
+          <button (click)="handleDivideClick.emit([extraction.id, extraction.remainder])">
+            @if (!extraction.queueNumber && extraction.remainder) {
+              <img src="/assets/divide.svg" alt="divide icon" class="max-w-8"/>
+            }
+          </button>
+        </td>
+      }
+
+      <td>
+        <div [style.marginLeft]="marginFor(level, extraction)" class="flex items-center gap-x-1.5">
+          @if (extraction.children && extraction.children.length > 0) {
+            <img src="/assets/caret-right-thin.svg" alt="divide icon"
+                 [class.rotate-90]="extraction.show"
+                 class="cursor-pointer max-w-4 rounded-full border"
+                 (click)="extraction.show = !extraction.show"/>
+          } @else if (level !== 0) {
+            <div class="w-1 aspect-square rounded-full bg-black"></div>
+          }
+          <p class="whitespace-nowrap">{{ extraction.queueNumber ?? extraction.id }}</p>
+        </div>
+      </td>
+
+      <td (dblclick)="onEdit(extraction)">{{ extraction.orderN }}</td>
+      <td (dblclick)="onEdit(extraction)">{{ extraction.region }}</td>
+      <td (dblclick)="onEdit(extraction)">{{ extraction.serviceCenter }}</td>
+      <td (dblclick)="onEdit(extraction)">{{ extraction.projectID }}</td>
+      <td (dblclick)="onEdit(extraction)">{{ extraction.withdrawType }}</td>
+      <td (dblclick)="onEdit(extraction)">{{ extraction.totalAmount }}</td>
+      <td (dblclick)="onEdit(extraction)">{{ extraction.purpose }}</td>
+      <td (dblclick)="onEdit(extraction)">{{ extraction.description }}</td>
+      <td (dblclick)="onEdit(extraction)">{{ extraction.tax }}</td>
+
+      <td (dblclick)="onEdit(extraction)"
+          [title]="extraction.transferPerson?.firstName + ' ' + extraction.transferPerson?.lastName">{{ extraction.extractionDate ? formatDate(extraction.extractionDate) : '' }}</td>
+
+      <td (dblclick)="onEdit(extraction)">{{ extraction.clarificationDate ? formatDate(extraction.clarificationDate) : '' }}</td>
+      <td (dblclick)="onEdit(extraction)">{{ extraction.paymentOrderSentDate ? formatDate(extraction.paymentOrderSentDate) : '' }}</td>
+      <td (dblclick)="onEdit(extraction)">{{ extraction.treasuryRefundDate ? formatDate(extraction.treasuryRefundDate) : '' }}</td>
+      <td (dblclick)="onEdit(extraction)">{{ extraction.historyId }}</td>
+      <td (dblclick)="onEdit(extraction)">{{ extraction.changePerson ? extraction.changePerson.firstName + ' ' + extraction.changePerson.lastName : '' }}</td>
+    </tr>
+
+    @if (extraction.children && extraction.children.length > 0 && extraction.show) {
+      <ng-container *ngTemplateOutlet="rowTpl; context: { $implicit: extraction.children, level: level + 1 }"></ng-container>
+    }
+  }
+</ng-template>
+
+<ng-container *ngTemplateOutlet="rowTpl; context: { $implicit: records(), level: 0 }"></ng-container>

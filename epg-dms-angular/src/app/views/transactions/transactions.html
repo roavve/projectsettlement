@@ -152,3 +152,54 @@
     <!--მესამე ხაზი-->
   </div>
 }
+
+<!--ცხრილი-->
+<div class="flex flex-col gap-y-5 mt-5">
+  <table class="table table-xs">
+    <thead>
+    <tr>
+      @if (user) { <th></th> }
+      <th>N</th>
+      <th>ორდერის N</th>
+      <th>რეგიონი</th>
+      <th>მ/ც</th>
+      <th>პროექტის N</th>
+      <th>ტიპი</th>
+      <th>ბრუნვა (კრედ)</th>
+      <th>დანიშნულება</th>
+      <th>დამატებითი ინფორმაცია</th>
+      <th>ID</th>
+      <th>ჩარიცხვის თარიღი</th>
+      <th>გარკვევის თარიღი</th>
+      <th>თანხის დაბრუნების <br/> მოთხოვნის თარიღი</th>
+      <th>საგადახდო დავალების <br/> მიღების თარიღი</th>
+      <th>History Id</th>
+      <th>შემცვლელი</th>
+    </tr>
+    </thead>
+
+    @if (records && records.length > 0) {
+      <tbody app-recursive-row [records]="records" [user]="user"></tbody>
+    } @else if (records && records.length === 0) {
+      <tbody>
+      <tr>
+        <td>
+          ჩანაწერები ვერ მოიძებნა!
+        </td>
+      </tr>
+      </tbody>
+    } @else {
+      <tbody>
+      <tr>
+        <td class="flex items-center gap-x-2.5">
+          იტვირთება <span class="loading loading-spinner loading-md"></span>
+        </td>
+      </tr>
+      </tbody>
+    }
+  </table>
+  <!--ცხრილი-->
+
+  <app-pagination [(currentPage)]="currentPage" [(pageSize)]="pageSize" [(totalPages)]="totalPages"
+                  [(totalElements)]="totalElements"/>
+</div>

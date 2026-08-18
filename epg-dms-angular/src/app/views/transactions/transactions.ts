@@ -2,12 +2,14 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FilterDate } from '../../components/filter-date/filter-date';
 import { UserSelect } from '../../components/user-select/user-select';
+import { RecursiveRow } from '../../components/recursive-row/recursive-row';
+import { Pagination } from '../../components/pagination/pagination';
 
 interface SortOption { text: string; by: string; dir: string; }
 
 @Component({
   selector: 'app-transactions',
-  imports: [FormsModule, FilterDate, UserSelect],
+  imports: [FormsModule, FilterDate, UserSelect, RecursiveRow, Pagination],
   templateUrl: './transactions.html',
   styleUrl: './transactions.css'
 })
@@ -18,6 +20,12 @@ export class Transactions {
   _regions: any[] = [];
   _serviceCenters: any[] = [];
   records: any[] | undefined = [];
+
+  user: any = { role: 'ROLE_ADMIN' };
+  currentPage = 1;
+  pageSize = 20;
+  totalPages = 1;
+  totalElements = 20;
 
   filter: any = {
     region: 'აირჩიეთ რეგიონი',
