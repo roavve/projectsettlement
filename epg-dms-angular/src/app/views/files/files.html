@@ -1,0 +1,226 @@
+@if (user) {
+  <app-file-input/>
+}
+
+<app-confirm [modalId]="'delete_file_modal'" question="ნამდვილად გსურთ ფაილის წაშლა?"/>
+<app-confirm [modalId]="'transfer_file_modal'" question="ნამდვილად გსურთ ყველა ჩანაწერის გადატანა?"/>
+<div class="flex flex-col gap-y-5">
+  <table class="table table-xs">
+    <thead>
+    <tr>
+      <th>ფაილის სახელი</th>
+      <th>ატვირთვის თარიღი</th>
+      <th>ფაილის სტატუსი</th>
+      <th>ფაილის ნახვა</th>
+      @if (user) { <th>ფაილის წაშლა</th> }
+      @if (user) { <th>ბაზაში გადატანა</th> }
+      @if (user) { <th>ფაილის ჩამტვირთვა</th> }
+    </tr>
+    </thead>
+
+    @if (files && files.length > 0) {
+      <tbody>
+        @for (sheet of files; track $index) {
+          <tr>
+            <td>
+              <div class="flex items-center gap-x-2.5">
+                <img src="/assets/excel.svg.png" alt="excel icon" class="w-8"/>
+                {{ baseName(sheet.fileName) }}
+              </div>
+            </td>
+            <td>{{ formatDate(sheet.date) }}</td>
+            <td>
+              @if (sheet.status === 'GOOD' || sheet.status === 'TRANSFERRED_GOOD') {
+                <img src="/assets/check_circle.svg" alt="check icon"/>
+              } @else if (sheet.status === 'WARNING' || sheet.status === 'TRANSFERRED_WARNING') {
+                <img src="/assets/warning.svg" alt="warning icon"/>
+              }
+            </td>
+            <td>
+              <img src="/assets/visibility.svg" alt="view icon" class="cursor-pointer"/>
+            </td>
+            @if (user) {
+              <td>
+                @if (sheet.status !== 'HISTORY') {
+                  <img src="/assets/delete.svg" alt="delete icon" class="cursor-pointer"/>
+                }
+              </td>
+            }
+            @if (user) {
+              <td>
+                @if (sheet.status === 'GOOD' || sheet.status === 'WARNING') {
+                  <button>
+                    <img src="/assets/save.svg" alt="save icon"/>
+                  </button>
+                }
+              </td>
+            }
+            @if (user) {
+              <td>
+                @if (sheet.status !== 'HISTORY') {
+                  <button class="cursor-pointer">
+                    <img src="/assets/download.png" width="32" height="32" alt="download icon"/>
+                  </button>
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    } @else if (files && files.length === 0) {
+      <tbody>
+      <tr>
+        <td>
+          გთხოვთ ატვირთოთ ფაილები!
+        </td>
+      </tr>
+      </tbody>
+    } @else {
+      <tbody>
+      <tr>
+        <td class="flex items-center gap-x-2.5">
+          იტვირთება <span class="loading loading-spinner loading-md"></span>
+        </td>
+      </tr>
+      </tbody>
+    }
+  </table>
+
+  <app-pagination [(currentPage)]="currentPage" [(pageSize)]="pageSize" [(totalPages)]="totalPages"
+                  [(totalElements)]="totalElements"/>
+</div>
+
+<dialog id="my_modal_1" class="modal">
+  <div class="modal-box max-w-7xl pt-8">
+    <div class="overflow-x-auto space-y-4">
+      <div class="flex items-center justify-between px-4 font-semibold">
+        <p>ჯამური თანხა - {{ details.amount }}</p>
+        <p>ჩანაწერი - {{ details.total }}</p>
+        <p>უხარვეზო - {{ details.ok }}</p>
+        <p>დახარვეზებული - {{ details.warning }}</p>
+      </div>
+      <div class="flex gap-x-16">
+        <table class="table table-xs">
+          <thead>
+          <tr>
+            <th>N</th>
+            <th>ჩარიცხვის თარიღი</th>
+            <th>სრული თანხა</th>
+            <th>გადამხდელი</th>
+            <th>დანიშნულება</th>
+            <th>აღწერა</th>
+            <th>სტატუსი</th>
+          </tr>
+          </thead>
+          @if (sheet && sheet.length > 0) {
+            <tbody>
+              @for (extraction of sheet; track $index) {
+                <tr>
+                  <td>{{ extraction.id }}</td>
+                  <td>{{ formatDate(extraction.date) }}</td>
+                  <td>{{ extraction.totalAmount }}</td>
+                  <td>{{ extraction.tax }}</td>
+                  <td>{{ extraction.purpose }}</td>
+                  <td>{{ extraction.description }}</td>
+                  <td>
+                    @if (extraction.status === 'GOOD') {
+                      <img src="/assets/check_circle.svg" alt="check icon"/>
+                    } @else {
+                      <img src="/assets/warning.svg" alt="warning icon"/>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          } @else if (sheet && sheet.length === 0) {
+            <tbody>
+            <tr>
+              <td>
+                ჩანაწერები ვერ მოიძებნა!
+              </td>
+            </tr>
+            </tbody>
+          } @else {
+            <tbody>
+            <tr>
+              <td class="flex items-center gap-x-2.5">
+                იტვირთება <span class="loading loading-spinner loading-md"></span>
+              </td>
+            </tr>
+            </tbody>
+          }
+        </table>
+
+        <div class="flex flex-col gap-y-10 font-medium">
+          <div class="flex flex-col gap-y-2.5">
+            <p>ჩარიცხვის თარიღი</p>
+
+            <div class="flex flex-col gap-y-2">
+              <div class="flex items-center gap-x-2">
+                <input type="date" class="text-sm" [(ngModel)]="filter.startDate"/>
+              </div>
+
+              <div class="flex items-center gap-x-2">
+                <input type="date" class="text-sm" [(ngModel)]="filter.endDate"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-y-2">
+            <p>სრული თანხა</p>
+
+            <div class="flex flex-col gap-y-5">
+              <input type="text" class="input input-bordered input-sm focus:outline-0" placeholder="მინ"
+                     [(ngModel)]="filter.totalAmountStart"/>
+
+              <input type="text" class="input input-bordered input-sm focus:outline-0" placeholder="მაქს"
+                     [(ngModel)]="filter.totalAmountEnd"/>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-y-2">
+            <p>სტატუსი</p>
+
+            <div class="flex flex-col gap-y-2.5">
+              <div class="flex items-center gap-x-2">
+                <input type="radio" name="radio" value="" class="radio radio-xs focus:outline-none"
+                       [(ngModel)]="filter.status"/>
+                <span class="text-xs">ყველა</span>
+              </div>
+
+              <div class="flex items-center gap-x-2">
+                <input type="radio" name="radio" value="GOOD" class="radio radio-xs focus:outline-none"
+                       [(ngModel)]="filter.status"/>
+                <span class="text-xs">უხარვეზო</span>
+              </div>
+
+              <div class="flex items-center gap-x-2">
+                <input type="radio" name="radio" value="WARNING" class="radio radio-xs focus:outline-none"
+                       [(ngModel)]="filter.status"/>
+                <span class="text-xs">დახარვეზებული</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-x-2 gap-y-2">
+            <button class="btn btn-neutral btn-sm">გაფილტვრა</button>
+            <button class="btn btn-neutral btn-sm">გასუფთავება</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-action">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+          ✕
+        </button>
+      </form>
+      <form method="dialog">
+        <button class="btn">დახურვა</button>
+      </form>
+    </div>
+  </div>
+
+  <app-pagination [(currentPage)]="_currentPage" [(pageSize)]="_pageSize" [(totalPages)]="_totalPages"
+                  [(totalElements)]="_totalElements"/>
+</dialog>

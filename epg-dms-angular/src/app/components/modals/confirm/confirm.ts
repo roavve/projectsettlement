@@ -7,7 +7,7 @@ import { Component, input, output } from '@angular/core';
   styleUrl: './confirm.css'
 })
 export class Confirm {
-  id = input.required<string>();
+  modalId = input.required<string>();
   question = input('ნამდვილად გსურთ წაშლა?');
   acceptText = input('დიახ');
   declineText = input('არა');

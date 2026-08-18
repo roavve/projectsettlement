@@ -1,0 +1,17 @@
+<div class="flex items-center gap-x-5 mb-3.5">
+  <div class="flex items-center gap-x-2.5">
+    <input type="file" class="hidden"/>
+    <button class="btn btn-sm">
+      აირჩიეთ ფაილი
+    </button>
+    <p class="text-sm">{{ selectedFileName }}</p>
+  </div>
+  @if (showUploadButton) {
+    <button class="btn btn-sm">
+      ატვირთვა
+    </button>
+  }
+</div>
+@if (message) {
+  <app-message [message]="message"/>
+}
