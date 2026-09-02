@@ -56,7 +56,7 @@ public class UserController {
 
     @Operation(summary = "Search users by username or email")
     @GetMapping
-    public ResponseEntity<List<UserSearchDto>> getUsers(
+    public ResponseEntity<List<UserResponseDto>> getUsers(
             @RequestParam(required =false) String username,
             @RequestParam(required = false) String email) {
         log.info("Fetching users with filters - username {}, email: {} (requested by {})",
@@ -67,8 +67,7 @@ public class UserController {
         if (email != null) filters.put("email", email);
         if (username != null) filters.put("username", username);
 
-        List<UserSearchDto> dtos;
-        dtos = userService.searchUsers(filters);
+        List<UserResponseDto> dtos;        dtos = userService.searchUsers(filters);
 
         log.info("Retrieved {} users (requested by {})", dtos.size(), getCurrentUsername());
         return ResponseEntity.ok(dtos);

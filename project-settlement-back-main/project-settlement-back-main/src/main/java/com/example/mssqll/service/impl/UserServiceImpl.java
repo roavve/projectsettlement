@@ -43,13 +43,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserSearchDto> searchUsers(Map<String, Object> filters) {
+    public List<UserResponseDto> searchUsers(Map<String, Object> filters) {
         log.info("Searching users with filters: {} (by {})", filters, getCurrentUsername());
         Specification<User> spec = UserSpecification.getSpecifications(filters);
         List<User> users = userRepository.findAll(spec);
         log.info("Found {} users matching filters (by {})", users.size(), getCurrentUsername());
-        return users.stream().map(this::mapToSearchDto).collect(Collectors.toList());
-    }
+        return users.stream().map(this::mapToDto).collect(Collectors.toList());    }
 
     private UserResponseDto mapToDto(User user) {
         return UserResponseDto.builder()
