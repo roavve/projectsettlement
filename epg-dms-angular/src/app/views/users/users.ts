@@ -112,7 +112,9 @@ export class Users implements OnInit {
       console.error('Error deleting user:', error);
     }
   }
-
+  roleLabel(key: string): string {
+    return this.roles.find(r => r.key === key)?.text ?? key;
+  }
   formatDate(dateString: string): string {
     const date = new Date(dateString);
     const day = date.getDate().toString().padStart(2, '0');
