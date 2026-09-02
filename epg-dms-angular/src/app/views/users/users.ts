@@ -84,8 +84,11 @@ export class Users implements OnInit {
     this.showModal = true;
   }
 
+  saveError = '';
+
   async saveUser(): Promise<void> {
     if (this.hasErrors) return;
+    this.saveError = '';
     try {
       if (this.isEditing) {
         await this.api.updateUser(this.selectedUser.id, this.selectedUser);
@@ -94,8 +97,16 @@ export class Users implements OnInit {
       }
       this.showModal = false;
       await this.getUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving user:', error);
+      if (error.status === 403) {
+        this.saveError = 'ადმინისტრატორის რედაქტირება არ არის ნებადართული';
+      } else if (error.status === 409) {
+        this.saveError = 'ამ ემაილით მომხმარებელი უკვე არსებობს';
+      } else {
+        this.saveError = 'შენახვა ვერ მოხერხდა';
+      }
+      this.cdr.markForCheck();
     }
   }
 

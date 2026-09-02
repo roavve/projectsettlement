@@ -98,7 +98,7 @@
           </select>
         </div>
       </div>
-
+      @if (saveError) { <p class="error-text" style="margin-top:14px">{{ saveError }}</p> }
       <div class="flex justify-end" style="gap:10px; border-top:1px solid var(--border-divider); padding-top:16px; margin-top:20px">
         <button (click)="saveUser()" class="btn-pill btn-success-solid" [disabled]="hasErrors">
           {{ isEditing ? 'შენახვა' : 'შექმნა' }}
