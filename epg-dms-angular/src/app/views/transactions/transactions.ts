@@ -181,6 +181,7 @@ export class Transactions implements OnInit {
   }
 
   async handleEditClick(extraction: any): Promise<void> {
+    this.scBlurred = false;
     this._error = false;
     this.searchTerm = extraction.serviceCenter;
     this.canceledProject = (extraction.canceledProject ?? []).join(' ');
@@ -249,13 +250,32 @@ export class Transactions implements OnInit {
   }
 
   get filteredServiceCenters(): any[] {
-    return this.sc.filter(c => c.name.toLowerCase().includes(this.searchTerm));
+    const term = this.searchTerm.toLowerCase();
+    return this.sc.filter(c => c.name.toLowerCase().includes(term));
+  }
+  scBlurred = false;
+
+  get serviceCenterMatch(): any {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) return null;
+    return this.sc.find(c => c.name.toLowerCase() === term) ?? null;
   }
 
+  get serviceCenterInvalid(): boolean {
+    return this.scBlurred && !!this.searchTerm.trim() && !this.serviceCenterMatch;
+  }
   closeDropdown(): void {
     setTimeout(() => this.isDropdownOpen = false, 200);
   }
-
+  onServiceCenterBlur(): void {
+    this.scBlurred = true;
+    const match = this.serviceCenterMatch;
+    if (match) {
+      this.extractionFee.serviceCenter = match.name;
+      this.extractionFee.region = match.parent.name;
+    }
+    this.closeDropdown();
+  }
   selectCenter(centerName: string, parentName: string): void {
     this.extractionFee.serviceCenter = centerName;
     this.searchTerm = centerName;
@@ -276,7 +296,18 @@ export class Transactions implements OnInit {
     }
     return `${day}.${month}.${year}`;
   }
-
+  onServiceCenterEnter(): void {
+    const match = this.serviceCenterMatch;
+    if (match) {
+      this.extractionFee.serviceCenter = match.name;
+      this.searchTerm = match.name;
+      this.extractionFee.region = match.parent.name;
+      this.isDropdownOpen = false;
+      this.scBlurred = false;
+    } else {
+      this.scBlurred = true;
+    }
+  }
   validateAmount(): boolean {
     const regex = /^(\d+(\.\d+)?(\s\d+(\.\d+)?)*)$/;
     const clean = this.amount.replace(/\s+/g, ' ').trim();
