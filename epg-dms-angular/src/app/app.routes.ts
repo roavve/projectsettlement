@@ -11,7 +11,7 @@ export const routes: Routes = [
   {
     path: '',
     component: Transactions,
-    canActivate: [authGuard(['ROLE_GUEST', 'ROLE_OPERATOR', 'ROLE_MANAGER', 'ROLE_ADMIN'])]
+    canActivate: [authGuard(['ROLE_GUEST', 'ROLE_OPERATOR', '-*ROLE_MANAGER', 'ROLE_ADMIN'])]
   },
   {
     path: 'files',

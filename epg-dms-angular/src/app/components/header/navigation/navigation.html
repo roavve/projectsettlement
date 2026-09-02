@@ -18,15 +18,17 @@
           @else { <span>ფაილი იგზავნება...</span> }
         </button>
       }
-      <!-- Users Link -->
+
+
+
       @if (showUsers()) {
         <a class="btn" [class.btn-neutral]="checkCurrentRoute('/users')" routerLink="/users">მომხმარებლები</a>
       }
-      <!-- User Profile and Logout -->
       <div class="cursor-pointer items-center avatar placeholder gap-x-2.5">
         <button class="cursor-auto uppercase btn no-animation hover:bg-base-200 hover:border-base-200">{{ getUserName() }}</button>
         <button class="text-white btn btn-error" (click)="logout()">გასვლა</button>
       </div>
     </div>
+
   }
 </nav>
