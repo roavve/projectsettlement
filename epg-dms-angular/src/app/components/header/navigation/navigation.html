@@ -11,7 +11,7 @@
   </div>
   @if (isAuthenticated) {
     <div class="flex items-center gap-x-5">
-      <!-- File Export Link -->
+      <span class="badge badge-outline">Angular</span>
       @if (showFileExport()) {
         <button class="text-white btn btn-success" type="button" [disabled]="exportLoading" (click)="downloadExport()">
           @if (!exportLoading) { <span>ექსპორტი</span> }

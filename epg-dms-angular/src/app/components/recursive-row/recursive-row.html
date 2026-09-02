@@ -2,20 +2,18 @@
   @for (extraction of rows; track extraction.id) {
     <tr class="cursor-pointer"
         [class.bg-yellow-100]="extraction.status === 'REMINDER'"
-        [class.bg-gray-300]="extraction.children.length > 0"
-        [class.hover:bg-gray-100]="extraction.children.length <= 0"
-        [class.hover:bg-yellow-100]="extraction.status === 'REMINDER'">
+        [class.bg-gray-300]="extraction.children.length > 0">
       @if (user()) {
-        <td title="გაყოფა">
+        <td title="გაყოფა" style="text-align:center">
           <button (click)="handleDivideClick.emit([extraction.id, extraction.remainder])">
             @if (!extraction.queueNumber && extraction.remainder) {
-              <img src="/assets/divide.svg" alt="divide icon" class="max-w-8"/>
+              <img src="/assets/divide.svg" alt="divide icon" style="width:20px; opacity:.5"/>
             }
           </button>
         </td>
       }
 
-      <td>
+      <td class="num" style="font-weight:600">
         <div [style.marginLeft]="marginFor(level, extraction)" class="flex items-center gap-x-1.5">
           @if (extraction.children && extraction.children.length > 0) {
             <img src="/assets/caret-right-thin.svg" alt="divide icon"
@@ -25,27 +23,34 @@
           } @else if (level !== 0) {
             <div class="w-1 aspect-square rounded-full bg-black"></div>
           }
-          <p class="whitespace-nowrap">{{ extraction.queueNumber ?? extraction.id }}</p>
+          <span class="whitespace-nowrap">{{ extraction.queueNumber ?? extraction.id }}</span>
         </div>
       </td>
 
-      <td (dblclick)="onEdit(extraction)">{{ extraction.orderN }}</td>
-      <td (dblclick)="onEdit(extraction)">{{ extraction.region }}</td>
+      <td (dblclick)="onEdit(extraction)" style="color:var(--text-muted)">{{ extraction.orderN }}</td>
+      <td (dblclick)="onEdit(extraction)" style="line-height:1.45">{{ extraction.region }}</td>
       <td (dblclick)="onEdit(extraction)">{{ extraction.serviceCenter }}</td>
-      <td (dblclick)="onEdit(extraction)">{{ extraction.projectID }}</td>
-      <td (dblclick)="onEdit(extraction)">{{ extraction.withdrawType }}</td>
-      <td (dblclick)="onEdit(extraction)">{{ extraction.totalAmount }}</td>
-      <td (dblclick)="onEdit(extraction)">{{ extraction.purpose }}</td>
-      <td (dblclick)="onEdit(extraction)">{{ extraction.description }}</td>
-      <td (dblclick)="onEdit(extraction)">{{ extraction.tax }}</td>
+      <td (dblclick)="onEdit(extraction)" class="num">{{ extraction.projectID }}</td>
+      <td (dblclick)="onEdit(extraction)" class="num" style="text-align:right">{{ extraction.withdrawType }}</td>
+      <td (dblclick)="onEdit(extraction)" class="num" style="text-align:right; font-weight:600">{{ extraction.totalAmount }}</td>
 
-      <td (dblclick)="onEdit(extraction)"
+      <td (dblclick)="onEdit(extraction)" [title]="extraction.purpose">
+        <div class="clamp-3">{{ extraction.purpose }}</div>
+      </td>
+
+      <td (dblclick)="onEdit(extraction)" [title]="extraction.description" style="color:var(--text-secondary)">
+        <div class="clamp-3">{{ extraction.description }}</div>
+      </td>
+
+      <td (dblclick)="onEdit(extraction)" class="mono-id">{{ extraction.tax }}</td>
+
+      <td (dblclick)="onEdit(extraction)" class="num col-divider"
           [title]="extraction.transferPerson?.firstName + ' ' + extraction.transferPerson?.lastName">{{ extraction.extractionDate ? formatDate(extraction.extractionDate) : '' }}</td>
 
-      <td (dblclick)="onEdit(extraction)">{{ extraction.clarificationDate ? formatDate(extraction.clarificationDate) : '' }}</td>
-      <td (dblclick)="onEdit(extraction)">{{ extraction.paymentOrderSentDate ? formatDate(extraction.paymentOrderSentDate) : '' }}</td>
-      <td (dblclick)="onEdit(extraction)">{{ extraction.treasuryRefundDate ? formatDate(extraction.treasuryRefundDate) : '' }}</td>
-      <td (dblclick)="onEdit(extraction)">{{ extraction.historyId }}</td>
+      <td (dblclick)="onEdit(extraction)" class="num">{{ extraction.clarificationDate ? formatDate(extraction.clarificationDate) : '' }}</td>
+      <td (dblclick)="onEdit(extraction)" class="num">{{ extraction.paymentOrderSentDate ? formatDate(extraction.paymentOrderSentDate) : '' }}</td>
+      <td (dblclick)="onEdit(extraction)" class="num">{{ extraction.treasuryRefundDate ? formatDate(extraction.treasuryRefundDate) : '' }}</td>
+      <td (dblclick)="onEdit(extraction)" class="num col-divider">{{ extraction.historyId }}</td>
       <td (dblclick)="onEdit(extraction)">{{ extraction.changePerson ? extraction.changePerson.firstName + ' ' + extraction.changePerson.lastName : '' }}</td>
     </tr>
 
