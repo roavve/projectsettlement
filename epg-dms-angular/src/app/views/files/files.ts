@@ -198,7 +198,7 @@ export class Files implements OnInit {
   }
 
   baseName(path: string): string {
-    return path.split('\\').at(-1) ?? '';
+    return path.split(/[\\/]/).at(-1) ?? '';
   }
 
   formatDate(dateString: string): string {

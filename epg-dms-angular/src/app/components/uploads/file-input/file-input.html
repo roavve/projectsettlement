@@ -1,13 +1,11 @@
-<div class="flex items-center gap-x-5 mb-3.5">
-  <div class="flex items-center gap-x-2.5">
-    <input #fileInput type="file" (change)="handleFileChange($event)" class="hidden"/>
-    <button (click)="triggerFileInput(fileInput)" class="btn btn-sm">
-      აირჩიეთ ფაილი
-    </button>
-    <p class="text-sm">{{ selectedFileName() }}</p>
-  </div>
+<div class="flex items-center" style="padding:16px; border:1px dashed #d9d2cd; border-radius:16px; background:#fff; margin-bottom:16px; gap:14px">
+  <input #fileInput type="file" (change)="handleFileChange($event)" class="hidden"/>
+  <button (click)="triggerFileInput(fileInput)" class="btn-pill btn-pill-sm btn-muted" style="border-color:var(--border-strong)">
+    აირჩიეთ ფაილი
+  </button>
+  <p style="font-size:13px; color:var(--text-muted)">{{ selectedFileName() }}</p>
   @if (showUploadButton()) {
-    <button class="btn btn-sm" (click)="upload()">
+    <button class="btn-pill btn-pill-sm btn-ink" style="margin-left:auto" (click)="upload()">
       ატვირთვა
     </button>
   }

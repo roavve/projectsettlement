@@ -3,17 +3,26 @@
 
 <app-confirm [modalId]="'delete_file_modal'" question="ნამდვილად გსურთ ფაილის წაშლა?" (accept)="deleteFile()"/>
 <app-confirm [modalId]="'transfer_file_modal'" question="ნამდვილად გსურთ ყველა ჩანაწერის გადატანა?" (accept)="transferFile()"/>
-<div class="flex flex-col gap-y-5">
-  <table class="table table-xs">
+<div class="surface-card-clip">
+  <table class="data-table table-pad-12">
+    <colgroup>
+      <col style="width:auto">
+      <col style="width:140px">
+      <col style="width:160px">
+      <col style="width:110px">
+      @if (user) { <col style="width:110px"> }
+      @if (user) { <col style="width:140px"> }
+      @if (user) { <col style="width:150px"> }
+    </colgroup>
     <thead>
     <tr>
       <th>ფაილის სახელი</th>
       <th>ატვირთვის თარიღი</th>
       <th>ფაილის სტატუსი</th>
-      <th>ფაილის ნახვა</th>
-      @if (user) { <th>ფაილის წაშლა</th> }
-      @if (user) { <th>ბაზაში გადატანა</th> }
-      @if (user) { <th>ფაილის ჩამტვირთვა</th> }
+      <th style="text-align:center">ფაილის ნახვა</th>
+      @if (user) { <th style="text-align:center">ფაილის წაშლა</th> }
+      @if (user) { <th style="text-align:center">ბაზაში გადატანა</th> }
+      @if (user) { <th style="text-align:center">ფაილის ჩამტვირთვა</th> }
     </tr>
     </thead>
 
@@ -22,42 +31,45 @@
         @for (sheet of files; track $index) {
           <tr>
             <td>
-              <div class="flex items-center gap-x-2.5">
-                <img src="/assets/excel.svg.png" alt="excel icon" class="w-8"/>
+              <div class="flex items-center" style="gap:10px">
+                <img src="/assets/excel.svg.png" alt="excel icon" style="width:26px"/>
                 {{ baseName(sheet.fileName) }}
               </div>
             </td>
-            <td>{{ formatDate(sheet.date) }}</td>
+            <td class="num">{{ formatDate(sheet.date) }}</td>
             <td>
               @if (sheet.status === 'GOOD' || sheet.status === 'TRANSFERRED_GOOD') {
-                <img src="/assets/check_circle.svg" alt="check icon"/>
+                <span class="chip chip-ok">უხარვეზო</span>
               } @else if (sheet.status === 'WARNING' || sheet.status === 'TRANSFERRED_WARNING') {
-                <img src="/assets/warning.svg" alt="warning icon"/>
+                <span class="chip chip-warn">დახარვეზებული</span>
               }
             </td>
-            <td>
-              <img src="/assets/visibility.svg" alt="view icon" class="cursor-pointer" (click)="openDetails(sheet)"/>
+            <td style="text-align:center">
+              <img src="/assets/visibility.svg" alt="view icon" class="icon-action" style="width:20px; display:inline-block"
+                   (click)="openDetails(sheet)"/>
             </td>
             @if (user) {
-              <td>
+              <td style="text-align:center">
                 @if (sheet.status !== 'HISTORY') {
-                  <img src="/assets/delete.svg" alt="delete icon" class="cursor-pointer" (click)="openDeleteModal(sheet)"/>                }
+                  <img src="/assets/delete.svg" alt="delete icon" class="icon-action" style="width:20px; display:inline-block"
+                       (click)="openDeleteModal(sheet)"/>
+                }
               </td>
             }
             @if (user) {
-              <td>
+              <td style="text-align:center">
                 @if (sheet.status === 'GOOD' || sheet.status === 'WARNING') {
                   <button (click)="openTransferModal(sheet)">
-                    <img src="/assets/save.svg" alt="save icon"/>
+                    <img src="/assets/save.svg" alt="save icon" class="icon-action" style="width:20px"/>
                   </button>
                 }
               </td>
             }
             @if (user) {
-              <td>
+              <td style="text-align:center">
                 @if (sheet.status !== 'HISTORY') {
-                  <button class="cursor-pointer" (click)="download(baseName(sheet.fileName))">
-                    <img src="/assets/download.png" width="32" height="32" alt="download icon"/>
+                  <button (click)="download(baseName(sheet.fileName))">
+                    <img src="/assets/download.png" alt="download icon" class="icon-action" style="width:22px; opacity:.8"/>
                   </button>
                 }
               </td>
@@ -68,7 +80,7 @@
     } @else if (files && files.length === 0) {
       <tbody>
       <tr>
-        <td>
+        <td [attr.colspan]="user ? 7 : 4" class="empty-row">
           გთხოვთ ატვირთოთ ფაილები!
         </td>
       </tr>
@@ -76,19 +88,20 @@
     } @else {
       <tbody>
       <tr>
-        <td class="flex items-center gap-x-2.5">
-          იტვირთება <span class="loading loading-spinner loading-md"></span>
+        <td [attr.colspan]="user ? 7 : 4" class="empty-row">
+          <span class="inline-flex items-center gap-x-2.5">
+            იტვირთება <span class="loading loading-spinner loading-md"></span>
+          </span>
         </td>
       </tr>
       </tbody>
     }
   </table>
-
-  <app-pagination [currentPage]="currentPage" (currentPageChange)="onPageChange($event)"
-                  [pageSize]="pageSize" (pageSizeChange)="onPageSizeChange($event)"
-                  [totalPages]="totalPages" [totalElements]="totalElements"/>
 </div>
 
+<app-pagination [currentPage]="currentPage" (currentPageChange)="onPageChange($event)"
+                [pageSize]="pageSize" (pageSizeChange)="onPageSizeChange($event)"
+                [totalPages]="totalPages" [totalElements]="totalElements"/>
 <dialog id="my_modal_1" class="modal">
   <div class="modal-box max-w-7xl pt-8">
     <div class="overflow-x-auto space-y-4">
