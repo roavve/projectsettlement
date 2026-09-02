@@ -35,15 +35,19 @@
   --radius-pill: 1.9rem;
 }
 
+html {
+  background: var(--page-bg);
+}
+
 body {
   font-family: 'bpg_glaho_sylfaen', system-ui, sans-serif;
   background: var(--page-bg);
   color: var(--ink);
+  min-height: 100vh;
 }
 
 @layer components {
 
-  /* ---------- surfaces ---------- */
 
   .surface-card {
     background: var(--surface);
@@ -215,7 +219,7 @@ body {
   }
 
   .btn-ink:hover {
-    background: var(--ink-hover);
+    background: #3d1f4d;
   }
 
   .btn-success-solid {

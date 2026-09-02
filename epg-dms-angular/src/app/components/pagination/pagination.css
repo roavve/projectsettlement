@@ -6,7 +6,9 @@
 .no-spinner::-webkit-inner-spin-button {
   appearance: none;
 }
-
+:host {
+  display: contents;
+}
 .no-spinner {
   appearance: textfield;
 }
