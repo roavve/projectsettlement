@@ -11,7 +11,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
+import com.example.mssqll.models.Status;
 import static com.example.mssqll.utiles.SecurityUtils.getCurrentUsername;
 
 @Slf4j
@@ -59,7 +59,12 @@ public class ExcelSpecification {
                             predicates.add(criteriaBuilder.like(root.get("description"), "%" + value + "%"));
                             break;
                         case "status":
-                            predicates.add(criteriaBuilder.equal(root.get("status"), value));
+                            try {
+                                Status statusValue = Status.valueOf(value.toString().trim().toUpperCase());
+                                predicates.add(criteriaBuilder.equal(root.get("status"), statusValue));
+                            } catch (IllegalArgumentException e) {
+                                predicates.add(criteriaBuilder.disjunction());
+                            }
                             break;
                     }
                 }
