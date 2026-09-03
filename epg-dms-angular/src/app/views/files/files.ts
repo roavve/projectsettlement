@@ -66,13 +66,20 @@ export class Files implements OnInit {
     this.cdr.markForCheck();
   }
 
+  uploadError = '';
+
   async createFile(): Promise<void> {
     if (!this.selectedFile) return;
+    this.uploadError = '';
     try {
       await this.api.createFile(this.selectedFile);
       await this.getFiles();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating sheet:', error);
+      this.uploadError = error.status === 415
+        ? 'დაშვებულია მხოლოდ .xlsx ფაილები'
+        : 'ფაილის ატვირთვა ვერ მოხერხდა';
+      this.cdr.markForCheck();
     }
   }
 

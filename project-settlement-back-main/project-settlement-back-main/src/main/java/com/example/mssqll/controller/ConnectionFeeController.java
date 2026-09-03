@@ -246,7 +246,6 @@ public class ConnectionFeeController {
         log.info("Downloading connection fees Excel with filters: {} (requested by {})", filters.keySet(), getCurrentUsername());
 
         Map<String, Object> downloadFilters = new HashMap<>(filters);
-        downloadFilters.put("download", "REMINDER");
         List<ConnectionFee> resti = connectionFeeService.getExportData(downloadFilters);
         log.info("Generating Excel file with {} connection fees (requested by {})", resti.size(), getCurrentUsername());
         ByteArrayInputStream excelStream = connectionFeeService.createExcel(resti);

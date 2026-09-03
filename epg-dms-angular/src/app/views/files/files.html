@@ -1,6 +1,7 @@
 @if (user) {
-  <app-file-input [(modelValue)]="selectedFile" (createFile)="createFile()"/>}
-
+  <app-file-input [(modelValue)]="selectedFile" (createFile)="createFile()"/>
+  @if (uploadError) { <p class="error-text" style="margin-bottom:16px">{{ uploadError }}</p> }
+}
 <app-confirm [modalId]="'delete_file_modal'" question="ნამდვილად გსურთ ფაილის წაშლა?" (accept)="deleteFile()"/>
 <app-confirm [modalId]="'transfer_file_modal'" question="ნამდვილად გსურთ ყველა ჩანაწერის გადატანა?" (accept)="transferFile()"/>
 <div class="surface-card-clip">

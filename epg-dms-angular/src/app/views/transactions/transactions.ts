@@ -249,21 +249,20 @@ export class Transactions implements OnInit {
     this.currentPage = 1;
     await this.getFees();
   }
-
   get filteredServiceCenters(): any[] {
-    const term = this.searchTerm.toLowerCase();
+    const term = (this.searchTerm ?? '').toLowerCase();
     return this.sc.filter(c => c.name.toLowerCase().includes(term));
   }
   scBlurred = false;
 
   get serviceCenterMatch(): any {
-    const term = this.searchTerm.trim().toLowerCase();
+    const term = (this.searchTerm ?? '').trim().toLowerCase();
     if (!term) return null;
     return this.sc.find(c => c.name.toLowerCase() === term) ?? null;
   }
 
   get serviceCenterInvalid(): boolean {
-    return this.scBlurred && !!this.searchTerm.trim() && !this.serviceCenterMatch;
+    return this.scBlurred && !!(this.searchTerm ?? '').trim() && !this.serviceCenterMatch;
   }
   closeDropdown(): void {
     setTimeout(() => this.isDropdownOpen = false, 200);
@@ -415,8 +414,7 @@ export class Transactions implements OnInit {
 
   async handleSaveClick(): Promise<void> {
     const { region, withdrawType, serviceCenter, projectID, orderN } = this.extractionFee;
-    const isRefund = withdrawType === '6 (თანხის დაბრუნება)';
-    const isAdmin = this.auth.user()?.role === 'ROLE_ADMIN';
+    const isRefund = withdrawType === '6';    const isAdmin = this.auth.user()?.role === 'ROLE_ADMIN';
     const isTypeException = (orderN ?? '').trim().toUpperCase() === 'N/A';
 
     const isRegionInvalid = !isRefund && region === 'აირჩიეთ რეგიონი';

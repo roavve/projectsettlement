@@ -445,10 +445,9 @@ public class ConnectionFeeServiceImpl implements ConnectionFeeService {
 
         List<ConnectionFee> flatList = new ArrayList<>();
         for (ConnectionFee fee : connectionFees) {
-            if (fee.getStatus() == Status.REMINDER) continue;
             flatList.add(fee);
             flatList.addAll(fee.getChildren().stream()
-                    .filter(child -> child.getStatus() != Status.SOFT_DELETED && child.getStatus() != Status.REMINDER)
+                    .filter(child -> child.getStatus() != Status.SOFT_DELETED)
                     .toList());
         }
 
