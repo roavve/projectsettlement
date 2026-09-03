@@ -55,17 +55,22 @@ public class ConnectionFeeCustomRepository {
         WhereResult where = buildWhereClause(filters);
         String filterWhereClause = where.clauses.isEmpty() ? "" : "WHERE " + String.join(" AND ", where.clauses);
 
+
         StringBuilder sql = new StringBuilder()
                 .append("SELECT cf.*, ")
                 .append("et.id AS et_id, et.date AS et_date, et.send_date AS et_send_date, et.file_name AS et_file_name, et.status AS et_status,\n ")
                 .append("tp.id AS tp_id, tp.first_name AS tp_first_name, tp.last_name AS tp_last_name, tp.email AS tp_email, tp.role AS tp_role, tp.created_at AS tp_created_at, tp.updated_at AS tp_updated_at,\n ")
                 .append("cp.id AS cp_id, cp.first_name AS cp_first_name, cp.last_name AS cp_last_name, cp.email AS cp_email, cp.role AS cp_role, cp.created_at AS cp_created_at, cp.updated_at AS cp_updated_at,\n ")
-                .append("STRING_AGG(CONVERT(VARCHAR, cfp.canceled_project), ', ') AS canceled_projects\n ")
-                .append(BASE_FROM)
-                .append(filterWhereClause)
-                .append(GROUP_BY);
+                .append("NULL AS canceled_projects\n ")
+                .append("FROM connection_fees cf\n ")
+                .append("LEFT JOIN extraction_task et ON cf.extraction_task_id = et.id\n ")
+                .append("LEFT JOIN users tp ON cf.transfer_person = tp.id\n ")
+                .append("LEFT JOIN users cp ON cf.change_person = cp.id\n ")
+                .append(filterWhereClause);
 
-        return jdbcTemplate.query(sql.toString(), where.params.toArray(), connectionFeeRowMapper());
+        List<ConnectionFee> fees = jdbcTemplate.query(sql.toString(), where.params.toArray(), connectionFeeRowMapper());
+        attachAllCanceledProjects(fees);
+        return fees;
     }
 
     public List<ConnectionFee> fetchConnectionFees(Map<String, Object> filters) {
@@ -393,7 +398,21 @@ public class ConnectionFeeCustomRepository {
         Timestamp timestamp = rs.getTimestamp(columnLabel);
         return timestamp != null ? timestamp.toLocalDateTime() : null;
     }
+    private void attachAllCanceledProjects(List<ConnectionFee> fees) {
+        if (fees.isEmpty()) return;
 
+        Map<Long, List<String>> byFeeId = new HashMap<>();
+        jdbcTemplate.query(
+                "SELECT connection_fee_id, canceled_project FROM connection_fee_canceled_project",
+                rs -> {
+                    byFeeId.computeIfAbsent(rs.getLong("connection_fee_id"), k -> new ArrayList<>())
+                            .add(rs.getString("canceled_project"));
+                });
+
+        for (ConnectionFee fee : fees) {
+            fee.setCanceledProject(byFeeId.getOrDefault(fee.getId(), Collections.emptyList()));
+        }
+    }
     private LocalDate getLocalDate(ResultSet rs, String columnLabel) throws SQLException {
         Date date = rs.getDate(columnLabel);
         return date != null ? date.toLocalDate() : null;
