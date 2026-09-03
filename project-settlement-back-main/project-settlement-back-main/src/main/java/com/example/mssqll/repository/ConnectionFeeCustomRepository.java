@@ -96,31 +96,33 @@ public class ConnectionFeeCustomRepository {
         WhereResult where = buildWhereClause(filters);
         String filterWhereClause = where.clauses.isEmpty() ? "" : "WHERE " + String.join(" AND ", where.clauses);
 
-        // CTE: find root parent IDs for all rows (parent or child) that match the filter
         String cte = "WITH matching_ids AS (\n" +
                 "    SELECT DISTINCT COALESCE(cf.parent_id, cf.id) AS root_id\n" +
                 "    " + BASE_FROM +
                 "    " + filterWhereClause + "\n" +
                 ")\n";
 
-        // Count distinct root parents matching the filters
         String countSql = cte + "SELECT COUNT(*) FROM matching_ids";
         Integer totalCount = jdbcTemplate.queryForObject(countSql, Integer.class, where.params.toArray());
         long total = totalCount != null ? totalCount : 0;
 
-        // Resolve sort column safely (whitelist)
         String sortColumn = SORT_COLUMN_MAP.getOrDefault(sortBy, "cf.transfer_date");
         String direction = "ASC".equalsIgnoreCase(sortDir) ? "ASC" : "DESC";
 
+        // canceled_project is fetched separately (see attachCanceledProjects).
+        // Aggregating it here forced a GROUP BY over ~45 columns, which made SQL Server
+        // sort all 234k rows before taking 20 — measured at ~1.7s of the ~2.6s total.
         StringBuilder sql = new StringBuilder(cte)
                 .append("SELECT cf.*, ")
                 .append("et.id AS et_id, et.date AS et_date, et.send_date AS et_send_date, et.file_name AS et_file_name, et.status AS et_status,\n ")
                 .append("tp.id AS tp_id, tp.first_name AS tp_first_name, tp.last_name AS tp_last_name, tp.email AS tp_email, tp.role AS tp_role, tp.created_at AS tp_created_at, tp.updated_at AS tp_updated_at,\n ")
                 .append("cp.id AS cp_id, cp.first_name AS cp_first_name, cp.last_name AS cp_last_name, cp.email AS cp_email, cp.role AS cp_role, cp.created_at AS cp_created_at, cp.updated_at AS cp_updated_at,\n ")
-                .append("STRING_AGG(CONVERT(VARCHAR, cfp.canceled_project), ', ') AS canceled_projects\n ")
-                .append(BASE_FROM)
+                .append("NULL AS canceled_projects\n ")
+                .append("FROM connection_fees cf\n ")
+                .append("LEFT JOIN extraction_task et ON cf.extraction_task_id = et.id\n ")
+                .append("LEFT JOIN users tp ON cf.transfer_person = tp.id\n ")
+                .append("LEFT JOIN users cp ON cf.change_person = cp.id\n ")
                 .append("WHERE cf.id IN (SELECT root_id FROM matching_ids) AND cf.status != 'SOFT_DELETED'\n")
-                .append(GROUP_BY)
                 .append(" ORDER BY ").append(sortColumn).append(" ").append(direction)
                 .append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
@@ -129,9 +131,28 @@ public class ConnectionFeeCustomRepository {
         pageParams.add(size);
 
         List<ConnectionFee> fees = jdbcTemplate.query(sql.toString(), pageParams.toArray(), connectionFeeRowMapper());
+        attachCanceledProjects(fees);
         return new PageImpl<>(fees, PageRequest.of(page, size), total);
     }
+    private void attachCanceledProjects(List<ConnectionFee> fees) {
+        if (fees.isEmpty()) return;
 
+        String inClause = String.join(",", Collections.nCopies(fees.size(), "?"));
+        String sql = "SELECT connection_fee_id, canceled_project FROM connection_fee_canceled_project " +
+                "WHERE connection_fee_id IN (" + inClause + ")";
+
+        Object[] ids = fees.stream().map(ConnectionFee::getId).toArray();
+
+        Map<Long, List<String>> byFeeId = new HashMap<>();
+        jdbcTemplate.query(sql, ids, rs -> {
+            byFeeId.computeIfAbsent(rs.getLong("connection_fee_id"), k -> new ArrayList<>())
+                    .add(rs.getString("canceled_project"));
+        });
+
+        for (ConnectionFee fee : fees) {
+            fee.setCanceledProject(byFeeId.getOrDefault(fee.getId(), Collections.emptyList()));
+        }
+    }
     private WhereResult buildWhereClause(Map<String, Object> filters) {
         WhereResult result = new WhereResult();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
