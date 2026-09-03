@@ -55,7 +55,7 @@ public class ConnectionFeeCustomRepository {
         WhereResult where = buildWhereClause(filters);
         String filterWhereClause = where.clauses.isEmpty() ? "" : "WHERE " + String.join(" AND ", where.clauses);
 
-
+        //fxed
         StringBuilder sql = new StringBuilder()
                 .append("SELECT cf.*, ")
                 .append("et.id AS et_id, et.date AS et_date, et.send_date AS et_send_date, et.file_name AS et_file_name, et.status AS et_status,\n ")
