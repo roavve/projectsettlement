@@ -161,6 +161,7 @@ export class Transactions implements OnInit {
       this.totalElements = data.page.totalElements;
     } catch (error) {
       console.error('Error fetching sheets:', error);
+      this.records = [];
     }
     this.cdr.markForCheck();
   }

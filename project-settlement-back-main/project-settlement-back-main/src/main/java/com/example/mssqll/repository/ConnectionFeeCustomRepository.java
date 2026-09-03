@@ -282,16 +282,27 @@ public class ConnectionFeeCustomRepository {
                     }
                     break;
                 case "id":
-                    result.clauses.add("cf.id = ?");
-                    result.params.add(Long.parseLong(val.toString()));
+                    try {
+                        long idVal = Long.parseLong(val.toString().trim());
+                        result.clauses.add("cf.id = ?");
+                        result.params.add(idVal);
+                    } catch (NumberFormatException e) {
+
+                        result.clauses.add("1 = 0");
+                    }
                     break;
                 case "extractionId":
                     result.clauses.add("cf.extraction_id = ?");
                     result.params.add(Long.parseLong(val.toString()));
                     break;
                 case "history":
-                    result.clauses.add("cf.history_id = ?");
-                    result.params.add(Long.parseLong(val.toString()));
+                    try {
+                        long histVal = Long.parseLong(val.toString().trim());
+                        result.clauses.add("cf.history_id = ?");
+                        result.params.add(histVal);
+                    } catch (NumberFormatException e) {
+                        result.clauses.add("1 = 0");
+                    }
                     break;
                 case "file":
                     result.clauses.add("et.file_name LIKE ?");
